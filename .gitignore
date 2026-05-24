@@ -1,0 +1,60 @@
+# dependencies
+node_modules
+.pnp
+.pnp.js
+
+# bun
+bun-debug.log
+bun-error.log
+
+# next.js
+.next
+out
+.turbo
+next-env.d.ts
+
+# production builds
+build
+dist
+
+# environment
+.env
+.env.local
+.env.*.local
+
+# testing
+coverage
+.nyc_output
+playwright-report
+test-results
+playwright/.cache
+
+# scanner reports
+report
+.jscpd-report
+
+# linter caches
+.eslintcache
+.stylelintcache
+.prettiercache
+
+# IDE and OS
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.example.json
+.idea
+*.iml
+.DS_Store
+Thumbs.db
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# typescript
+*.tsbuildinfo
+
+# vercel
+.vercel

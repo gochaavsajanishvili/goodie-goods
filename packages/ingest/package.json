@@ -1,0 +1,29 @@
+{
+  "name": "ingest",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "bun run src/main.ts",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@goodie-goods/shared": "workspace:*",
+    "@google/genai": "latest",
+    "cheerio": "latest",
+    "domhandler": "^6.0.1",
+    "drizzle-orm": "latest",
+    "p-limit": "latest",
+    "p-retry": "latest",
+    "postgres": "^3.4.9",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "latest",
+    "vitest": "latest"
+  }
+}

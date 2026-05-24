@@ -1,0 +1,27 @@
+{
+  "name": "@goodie-goods/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./schema": "./src/schema.ts",
+    "./constants": "./src/constants.ts",
+    "./types": "./src/types.ts",
+    "./env-loader": "./src/env-loader.ts",
+    "./categories": "./src/categories.ts",
+    "./vitest-base": "./src/vitest-base.ts",
+    "./base-env": "./src/base-env.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "drizzle-orm": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.7"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "db:generate": "dotenv -e ../../.env.local -- drizzle-kit generate",
+    "db:push": "dotenv -e ../../.env.local -- drizzle-kit push",
+    "db:studio": "dotenv -e ../../.env.local -- drizzle-kit studio"
+  },
+  "dependencies": {
+    "@goodie-goods/shared": "workspace:*",
+    "drizzle-orm": "latest",
+    "iron-session": "latest",
+    "lucide-react": "^1.16.0",
+    "motion": "^12.40.0",
+    "next": "latest",
+    "postgres": "^3.4.9",
+    "react": "latest",
+    "react-dom": "latest",
+    "server-only": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@playwright/test": "latest",
+    "@tailwindcss/postcss": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@vitejs/plugin-react": "latest",
+    "@vitest/coverage-v8": "latest",
+    "drizzle-kit": "latest",
+    "happy-dom": "latest",
+    "postcss": "latest",
+    "tailwindcss": "latest",
+    "vitest": "latest"
+  }
+}

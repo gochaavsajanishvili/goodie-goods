@@ -1,0 +1,106 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-serif: var(--font-georgian-serif), var(--font-fraunces), 'Iowan Old Style', Georgia, serif;
+  --font-sans: var(--font-georgian-sans), var(--font-dm-sans), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), 'SF Mono', 'Menlo', monospace;
+}
+
+@layer base {
+  :root {
+    --color-paper: #f8f3e7;
+    --color-paper-soft: #efe7d3;
+    --color-ink: #131211;
+    --color-ink-soft: #5a5346;
+    --color-rule: #d6cdb5;
+    --color-sage: #5e7a59;
+    --color-sage-soft: #d9e2cd;
+    --color-warm: #a4582a;
+    --color-warm-soft: #f1ddc1;
+    --color-quote: #8b6536;
+    --color-shadow: rgba(28, 26, 23, 0.06);
+
+    color-scheme: light;
+  }
+
+  [data-theme='dark'] {
+    --color-paper: #11130f;
+    --color-paper-soft: #181b16;
+    --color-ink: #f1ece0;
+    --color-ink-soft: #a39b85;
+    --color-rule: #2c3128;
+    --color-sage: #a5c099;
+    --color-sage-soft: #1e261b;
+    --color-warm: #e2a45c;
+    --color-warm-soft: #2c2218;
+    --color-quote: #d4a872;
+    --color-shadow: rgba(0, 0, 0, 0.4);
+
+    color-scheme: dark;
+  }
+
+  html {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-image:
+      radial-gradient(at 0% 0%, var(--color-sage-soft) 0%, transparent 38%),
+      radial-gradient(at 100% 100%, var(--color-warm-soft) 0%, transparent 42%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  ::selection {
+    background-color: var(--color-sage);
+    color: var(--color-paper);
+  }
+}
+
+@utility font-serif {
+  font-family: var(--font-serif);
+  font-feature-settings:
+    'liga' 1,
+    'kern' 1;
+  letter-spacing: -0.01em;
+}
+
+@utility font-mono {
+  font-family: var(--font-mono);
+}
+
+@utility prose-article {
+  font-family: var(--font-sans);
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: var(--color-ink);
+  text-align: justify;
+  text-wrap: pretty;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+}
+
+@utility prose-article-georgian {
+  font-feature-settings:
+    'liga' 1,
+    'kern' 1,
+    'calt' 1;
+  font-variation-settings: 'wght' 420;
+  letter-spacing: -0.005em;
+}
+
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink-soft);
+}
+
+@utility hairline {
+  border-color: var(--color-rule);
+}

@@ -1,0 +1,242 @@
+import { labelForCategory } from '@goodie-goods/shared/categories';
+import { ArrowLeft, ExternalLink, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+
+import type { Article } from '@goodie-goods/shared/schema';
+
+import { hyphenateGeorgian } from '@/lib/hyphenate-georgian';
+import { getApprovedArticleById, getRelatedArticles } from '@/lib/queries';
+
+export const revalidate = 60;
+
+const GEORGIAN_CHARS_PER_MINUTE = 1100;
+const RELATED_LIMIT = 6;
+
+interface PageProps {
+  readonly params: Promise<{ id: string }>;
+}
+
+export default async function ArticlePage({ params }: PageProps) {
+  const { id } = await params;
+  const article = await getApprovedArticleById(id);
+  if (article === null) {
+    notFound();
+  }
+  const related = await getRelatedArticles(article.id, RELATED_LIMIT);
+  return (
+    <main className="mx-auto max-w-7xl px-5 pt-10 pb-24 sm:pt-16">
+      <BackLink />
+      <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-14">
+        <ArticleBody article={article} />
+        <RelatedSidebar items={related} />
+      </div>
+    </main>
+  );
+}
+
+function BackLink() {
+  return (
+    <nav className="mb-8">
+      <Link
+        href="/"
+        className="group inline-flex items-center gap-2 text-(--color-ink-soft) transition hover:text-(--color-ink)"
+      >
+        <span className="inline-flex transition group-hover:-translate-x-0.5">
+          <ArrowLeft size={16} strokeWidth={1.6} aria-hidden="true" />
+        </span>
+        <span className="text-sm">უკან</span>
+      </Link>
+    </nav>
+  );
+}
+
+function ArticleBody({ article }: { readonly article: Article }) {
+  const paragraphs = splitParagraphs(article.body).map(hyphenateGeorgian);
+  const publishedDate =
+    article.publishedAt !== null ? formatTbilisiDate(article.publishedAt) : null;
+  const readMinutes = estimateReadMinutes(article.body);
+  const heroImage = article.imageUrl ?? article.bodyImages[0] ?? null;
+  const galleryImages = article.bodyImages.filter((url) => url !== heroImage);
+  return (
+    <article className="min-w-0 space-y-8">
+      <ArticleHeader
+        category={labelForCategory(article.category)}
+        publishedDate={publishedDate}
+        readMinutes={readMinutes}
+        title={article.title}
+      />
+      {heroImage !== null ? <HeroImage src={heroImage} /> : null}
+      <Prose paragraphs={paragraphs} />
+      {galleryImages.length > 0 ? <Gallery images={galleryImages} /> : null}
+      <ArticleFooter sourceUrl={article.sourceUrl} />
+    </article>
+  );
+}
+
+function Prose({ paragraphs }: { readonly paragraphs: readonly string[] }) {
+  if (paragraphs.length === 0) {
+    return (
+      <p className="text-sm text-(--color-ink-soft)">
+        სრული ტექსტი ხელმისაწვდომი არ არის. სცადეთ წყაროზე გადასვლა.
+      </p>
+    );
+  }
+  return (
+    <div
+      lang="ka"
+      className="prose-article space-y-5 first-letter:float-left first-letter:mt-2 first-letter:mr-3 first-letter:font-serif first-letter:text-[3.75rem] first-letter:leading-[0.82] first-letter:font-medium first-letter:text-(--color-quote)"
+    >
+      {paragraphs.map((p, idx) => (
+        <p key={idx}>{p}</p>
+      ))}
+    </div>
+  );
+}
+
+function ArticleHeader({
+  category,
+  publishedDate,
+  readMinutes,
+  title,
+}: {
+  readonly category: string;
+  readonly publishedDate: string | null;
+  readonly readMinutes: number | null;
+  readonly title: string;
+}) {
+  return (
+    <header className="space-y-5 border-b border-(--color-rule) pb-8">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[0.6875rem] tracking-widest text-(--color-ink-soft) uppercase">
+        <span className="inline-flex items-center gap-1.5">
+          <Sparkles
+            size={11}
+            strokeWidth={1.6}
+            className="text-(--color-sage)"
+            aria-hidden="true"
+          />
+          {category}
+        </span>
+        {publishedDate !== null ? <MetaSep>{publishedDate}</MetaSep> : null}
+        {readMinutes !== null ? <MetaSep>{readMinutes.toString()} წთ კითხვა</MetaSep> : null}
+      </div>
+      <h1 className="font-serif text-3xl leading-[1.15] text-balance text-(--color-ink) sm:text-4xl md:text-[2.6rem]">
+        {title}
+      </h1>
+    </header>
+  );
+}
+
+function MetaSep({ children }: { readonly children: React.ReactNode }) {
+  return (
+    <>
+      <span aria-hidden="true" className="text-(--color-rule)">
+        /
+      </span>
+      <span>{children}</span>
+    </>
+  );
+}
+
+function HeroImage({ src }: { readonly src: string }) {
+  return (
+    <figure className="overflow-hidden rounded-lg bg-(--color-paper-soft) shadow-[0_30px_60px_-30px_var(--color-shadow)]">
+      <img src={src} alt="" className="block w-full" loading="lazy" />
+    </figure>
+  );
+}
+
+function Gallery({ images }: { readonly images: readonly string[] }) {
+  return (
+    <figure className="mt-8 space-y-4 border-t border-(--color-rule) pt-8">
+      {images.map((src) => (
+        <img
+          key={src}
+          src={src}
+          alt=""
+          loading="lazy"
+          className="block w-full rounded-lg bg-(--color-paper-soft) shadow-[0_18px_36px_-24px_var(--color-shadow)]"
+        />
+      ))}
+    </figure>
+  );
+}
+
+function ArticleFooter({ sourceUrl }: { readonly sourceUrl: string }) {
+  return (
+    <footer className="mt-10 border-t border-(--color-rule) pt-8">
+      <a
+        href={sourceUrl}
+        target="_blank"
+        className="inline-flex items-center gap-2 rounded-full border border-(--color-rule) bg-(--color-paper-soft) px-4 py-2 font-mono text-[0.6875rem] tracking-widest text-(--color-ink-soft) uppercase transition hover:border-(--color-sage) hover:text-(--color-ink)"
+      >
+        <ExternalLink size={12} strokeWidth={1.6} aria-hidden="true" />
+        ambebi.ge
+      </a>
+    </footer>
+  );
+}
+
+function RelatedSidebar({ items }: { readonly items: readonly Article[] }) {
+  if (items.length === 0) {
+    return null;
+  }
+  return (
+    <aside className="lg:sticky lg:top-10 lg:self-start">
+      <h2 className="eyebrow mb-5 flex items-center gap-2">
+        <span className="inline-block h-px w-6 bg-(--color-sage)" aria-hidden="true" />
+        კიდევ კარგი
+      </h2>
+      <ul className="space-y-5">
+        {items.map((item) => (
+          <li key={item.id}>
+            <Link href={`/article/${item.id}`} className="group block">
+              {item.imageUrl !== null && item.imageUrl !== '' ? (
+                <div className="mb-3 aspect-[16/10] overflow-hidden rounded-md bg-(--color-paper-soft)">
+                  <img
+                    src={item.imageUrl}
+                    alt=""
+                    loading="lazy"
+                    className="h-full w-full object-cover transition group-hover:scale-[1.02]"
+                  />
+                </div>
+              ) : null}
+              <p className="mb-1 font-mono text-[0.625rem] tracking-widest text-(--color-ink-soft) uppercase">
+                {labelForCategory(item.category)}
+              </p>
+              <h3 className="font-serif text-base leading-snug text-(--color-ink) transition group-hover:text-(--color-warm)">
+                {item.title}
+              </h3>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </aside>
+  );
+}
+
+function formatTbilisiDate(date: Date): string {
+  return new Intl.DateTimeFormat('ka-GE', {
+    timeZone: 'Asia/Tbilisi',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(date);
+}
+
+function estimateReadMinutes(body: string | null): number | null {
+  if (body === null || body.length === 0) {
+    return null;
+  }
+  return Math.max(1, Math.round(body.length / GEORGIAN_CHARS_PER_MINUTE));
+}
+
+function splitParagraphs(body: string | null): string[] {
+  if (body === null || body.length === 0) {
+    return [];
+  }
+  return body
+    .split(/\n{2,}|(?<=[.!?])\s{2,}/u)
+    .map((p) => p.trim())
+    .filter((p) => p.length > 0);
+}

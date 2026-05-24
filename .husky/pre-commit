@@ -1,0 +1,23 @@
+#!/usr/bin/env sh
+
+# Block direct commits on protected branches after initial scaffold.
+# The first commit on main is allowed because HEAD does not exist yet.
+branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo main)"
+if [ "$branch" = "main" ] && git rev-parse --verify HEAD >/dev/null 2>&1; then
+  echo ""
+  echo "ERROR: direct commits to 'main' are forbidden after initial scaffold."
+  echo ""
+  echo "  Create a feature branch first:"
+  echo "    git checkout -b feat/<name>    # new feature"
+  echo "    git checkout -b fix/<name>     # bug fix"
+  echo "    git checkout -b chore/<name>   # tooling, deps, build"
+  echo "    git checkout -b docs/<name>    # documentation only"
+  echo "    git checkout -b refactor/<name># refactor with no behavior change"
+  echo ""
+  echo "  Merge back with:"
+  echo "    git checkout main && git merge --no-ff <work-branch>"
+  echo ""
+  exit 1
+fi
+
+bunx --bun lint-staged

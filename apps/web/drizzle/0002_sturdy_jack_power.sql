@@ -1,0 +1,1 @@
+ALTER TABLE "articles" ADD COLUMN "body_images" text[] DEFAULT '{}'::text[] NOT NULL;
