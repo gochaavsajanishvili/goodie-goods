@@ -80,7 +80,8 @@ function QueueRow({ article }: { readonly article: Article }) {
         <a
           href={article.sourceUrl}
           target="_blank"
-          className="inline-flex items-center gap-1 font-mono text-[0.6875rem] tracking-widest text-[color:var(--color-ink-soft)] uppercase hover:text-[color:var(--color-ink)]"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 font-mono text-[0.6875rem] tracking-widest text-(--color-ink-soft) uppercase hover:text-(--color-ink)"
         >
           <ExternalLink size={11} strokeWidth={1.6} aria-hidden="true" />
           წყაროს ნახვა
