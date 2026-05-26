@@ -40,10 +40,21 @@ export interface ClassifyInput {
 
 const RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503, 504]);
 
+const REMOTE_RETRY_OPTS = {
+  retries: 5,
+  minTimeout: 2000,
+  maxTimeout: 30_000,
+  factor: 2,
+  randomize: true,
+} as const;
+
 export function getActiveModel(): string {
   const env = getEnv();
   if (env.OLLAMA_BASE_URL !== undefined) {
     return env.OLLAMA_MODEL;
+  }
+  if (env.GROQ_API_KEY !== undefined) {
+    return env.GROQ_MODEL;
   }
   return CLASSIFIER_MODEL;
 }
@@ -60,18 +71,16 @@ export async function classify(input: ClassifyInput): Promise<Classification> {
       factor: 2,
     });
   }
-
+  if (env.GROQ_API_KEY !== undefined) {
+    return await pRetry(async () => await callGroq(env, userPrompt), REMOTE_RETRY_OPTS);
+  }
   if (env.GEMINI_API_KEY === undefined) {
-    throw new Error('No classifier configured: set OLLAMA_BASE_URL or GEMINI_API_KEY');
+    throw new Error(
+      'No classifier configured: set OLLAMA_BASE_URL, GROQ_API_KEY, or GEMINI_API_KEY',
+    );
   }
   const ai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
-  return await pRetry(async () => await callGemini(ai, userPrompt), {
-    retries: 5,
-    minTimeout: 2000,
-    maxTimeout: 30_000,
-    factor: 2,
-    randomize: true,
-  });
+  return await pRetry(async () => await callGemini(ai, userPrompt), REMOTE_RETRY_OPTS);
 }
 
 async function callOllama(env: Env, userPrompt: string): Promise<Classification> {
@@ -102,6 +111,59 @@ async function callOllama(env: Env, userPrompt: string): Promise<Classification>
   const parsed = classificationSchema.safeParse(JSON.parse(raw));
   if (!parsed.success) {
     throw new AbortError(`Ollama response failed schema validation: ${parsed.error.message}`);
+  }
+  return parsed.data;
+}
+
+async function callGroq(env: Env, userPrompt: string): Promise<Classification> {
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${env.GROQ_API_KEY ?? ''}`,
+    },
+    body: JSON.stringify({
+      model: env.GROQ_MODEL,
+      temperature: 0.1,
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: userPrompt },
+      ],
+    }),
+  });
+  await throwOnGroqError(response);
+  const raw = await readGroqContent(response);
+  return parseClassifierJson(raw, 'Groq');
+}
+
+async function throwOnGroqError(response: Response): Promise<void> {
+  if (response.ok) {
+    return;
+  }
+  const text = await response.text();
+  const message = `Groq call failed: ${response.status.toString()} ${text.slice(0, 200)}`;
+  if (RETRYABLE_STATUS_CODES.has(response.status)) {
+    throw new Error(message);
+  }
+  throw new AbortError(message);
+}
+
+async function readGroqContent(response: Response): Promise<string> {
+  const json = (await response.json()) as {
+    choices?: { message?: { content?: string } }[];
+  };
+  const raw = json.choices?.[0]?.message?.content?.trim();
+  if (raw === undefined || raw.length === 0) {
+    throw new AbortError('Groq returned empty response');
+  }
+  return raw;
+}
+
+function parseClassifierJson(raw: string, provider: string): Classification {
+  const parsed = classificationSchema.safeParse(JSON.parse(raw));
+  if (!parsed.success) {
+    throw new AbortError(`${provider} response failed schema validation: ${parsed.error.message}`);
   }
   return parsed.data;
 }
