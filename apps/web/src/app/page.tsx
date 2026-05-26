@@ -1,13 +1,11 @@
 import { ArticleCard } from '@/components/article-card';
 import { CategoryFilter } from '@/components/category-filter';
-import { StrictToggle } from '@/components/strict-toggle';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { getApprovedArticles, getReadLocallySetting, type FeedMode } from '@/lib/queries';
+import { getApprovedArticles, getReadLocallySetting } from '@/lib/queries';
 
 export const revalidate = 60;
 
 interface SearchParams {
-  readonly strict?: string;
   readonly category?: string;
 }
 
@@ -19,18 +17,16 @@ const FEED_LIMIT = 30;
 
 export default async function HomePage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const mode: FeedMode = params.strict === 'false' ? 'soft' : 'strict';
   const category =
     typeof params.category === 'string' && params.category !== '' ? params.category : null;
-  const strictParam = params.strict ?? null;
   const [articles, zenMode] = await Promise.all([
-    getApprovedArticles({ mode, category, limit: FEED_LIMIT }),
+    getApprovedArticles({ category, limit: FEED_LIMIT }),
     getReadLocallySetting(),
   ]);
   return (
     <main className="mx-auto max-w-6xl px-5 pt-10 pb-20 sm:pt-16">
       <Masthead />
-      <FilterRow mode={mode} category={category} strictParam={strictParam} />
+      <FilterRow category={category} />
       {articles.length === 0 ? (
         <EmptyState />
       ) : (
@@ -65,33 +61,23 @@ function Masthead() {
   );
 }
 
-function FilterRow({
-  mode,
-  category,
-  strictParam,
-}: {
-  readonly mode: FeedMode;
-  readonly category: string | null;
-  readonly strictParam: string | null;
-}) {
+function FilterRow({ category }: { readonly category: string | null }) {
   return (
-    <div className="mb-10 flex flex-col gap-4 border-y border-(--color-rule) py-4 lg:flex-row lg:items-center lg:gap-6">
-      <div className="min-w-0 flex-1">
-        <CategoryFilter active={category} strictParam={strictParam} />
-      </div>
-      <StrictToggle mode={mode} />
+    <div className="hairline mb-10 border-y py-4">
+      <CategoryFilter active={category} />
     </div>
   );
 }
 
 function SiteFooter() {
   return (
-    <footer className="mt-20 border-t border-(--color-rule) pt-6 text-center font-mono text-[0.6875rem] tracking-widest text-(--color-ink-soft) uppercase">
+    <footer className="hairline mt-20 border-t pt-6 text-center font-mono text-[0.6875rem] tracking-widest text-(--color-ink-soft) uppercase">
       წყარო ·{' '}
       <a
         href="https://www.ambebi.ge"
         className="underline-offset-4 hover:underline"
         target="_blank"
+        rel="noopener noreferrer"
       >
         ambebi.ge
       </a>
@@ -101,8 +87,8 @@ function SiteFooter() {
 
 function EmptyState() {
   return (
-    <div className="rounded-lg border border-[color:var(--color-rule)] bg-[color:var(--color-paper-soft)] px-6 py-16 text-center">
-      <p className="text-base text-[color:var(--color-ink-soft)]">
+    <div className="hairline rounded-lg border bg-(--color-paper-soft) px-6 py-16 text-center">
+      <p className="text-base text-(--color-ink-soft)">
         ახალი კარგი ამბები ჯერ არ არის. სცადეთ მოგვიანებით.
       </p>
     </div>
