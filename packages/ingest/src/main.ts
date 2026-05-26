@@ -2,10 +2,12 @@ import { SCRAPER_CONCURRENCY } from '@goodie-goods/shared/constants';
 import pLimit from 'p-limit';
 
 import { classify } from './classify';
+import { isEntrypoint, runCli } from './cli';
 import { createDbClient, type DbClient } from './db';
 import { fetchArticle, fetchHomepageLinks } from './fetch-ambebi';
 import { shouldRejectByKeyword } from './keyword-filter';
 import { findExistingUrls, persistArticle, recordIngestRun } from './persist';
+import { pruneOldArticles } from './prune';
 
 import type { ParsedArticleLink, IngestSummary } from '@goodie-goods/shared/types';
 
@@ -60,29 +62,21 @@ export async function runIngest(): Promise<IngestSummary> {
   });
   await Promise.all(tasks);
 
+  const pruned = await pruneOldArticles(db);
+
   await recordIngestRun(db, {
     startedAt,
     finishedAt: new Date(),
     urlsSeen: links.length,
     urlsNew: fresh.length,
     ...counters,
+    prunedCount: pruned,
     errorLog: errors.length === 0 ? null : { errors },
   });
 
-  return { urlsSeen: links.length, urlsNew: fresh.length, ...counters, errors };
+  return { urlsSeen: links.length, urlsNew: fresh.length, ...counters, pruned, errors };
 }
 
-const isEntrypoint = import.meta.url === `file://${process.argv[1] ?? ''}`;
-if (isEntrypoint) {
-  runIngest()
-    .then((summary) => {
-      console.warn(`ingest done: ${JSON.stringify(summary)}`);
-      process.exit(0);
-    })
-    .catch((err: unknown) => {
-      const message = err instanceof Error ? err.message : String(err);
-
-      console.error(`ingest failed: ${message}`);
-      process.exit(1);
-    });
+if (isEntrypoint(import.meta.url)) {
+  runCli('ingest', runIngest);
 }
