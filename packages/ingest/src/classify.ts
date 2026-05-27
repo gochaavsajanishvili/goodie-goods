@@ -31,6 +31,7 @@ const responseSchema = {
     reason: { type: 'string' },
   },
   required: ['isGoodNews', 'score', 'category', 'reason'],
+  additionalProperties: false,
 } as const;
 
 export interface ClassifyInput {
@@ -125,7 +126,14 @@ async function callGroq(env: Env, userPrompt: string): Promise<Classification> {
     body: JSON.stringify({
       model: env.GROQ_MODEL,
       temperature: 0.1,
-      response_format: { type: 'json_object' },
+      response_format: {
+        type: 'json_schema',
+        json_schema: {
+          name: 'classification',
+          strict: true,
+          schema: responseSchema,
+        },
+      },
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user', content: userPrompt },
