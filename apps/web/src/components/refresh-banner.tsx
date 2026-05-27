@@ -1,6 +1,6 @@
 export function RefreshBanner({ status }: { readonly status: string }) {
   const ok = status === 'ok';
-  const message = ok ? 'ახალი ამბები ხელმისაწვდომია. გადატვირთეთ ერთ წუთში.' : errorMessage(status);
+  const message = ok ? 'ახალი ამბები განახლდა. განაახლეთ გვერდი.' : errorMessage(status);
   const classes = ok
     ? 'border-(--color-sage) bg-(--color-sage-soft) text-(--color-ink)'
     : 'border-red-400/50 bg-red-500/10 text-red-700 dark:text-red-300';

@@ -10,9 +10,9 @@ export function RefreshFab() {
     >
       <button
         type="submit"
-        aria-label="ახალი ამბების მოძიება"
-        title="ახალი ამბების მოძიება"
-        className="group hairline inline-flex h-12 w-12 items-center justify-center rounded-full border bg-(--color-paper-soft) text-(--color-ink) shadow-[0_18px_36px_-18px_var(--color-shadow)] transition hover:border-(--color-sage) hover:text-(--color-sage) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-sage)"
+        aria-label="ახალი ამბების განახლება"
+        title="ახალი ამბების განახლება"
+        className="group inline-flex h-12 w-12 items-center justify-center rounded-full bg-(--color-sage) text-(--color-paper) shadow-[0_18px_36px_-12px_var(--color-shadow)] ring-1 ring-(--color-ink)/10 transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-sage) active:translate-y-px"
       >
         <RefreshCw
           size={18}
