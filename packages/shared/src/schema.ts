@@ -12,6 +12,8 @@ import {
 
 import { ADMIN_STATUS_VALUES, SOURCE_NAME } from './constants';
 
+import type { ArticleBlock } from './types';
+
 export const adminStatusEnum = pgEnum('admin_status', ADMIN_STATUS_VALUES);
 
 export const articles = pgTable('articles', {
@@ -39,6 +41,7 @@ export const articles = pgTable('articles', {
     .array()
     .notNull()
     .default(sql`'{}'::text[]`),
+  bodyBlocks: jsonb('body_blocks').$type<ArticleBlock[]>(),
 });
 
 export const appSettings = pgTable('app_settings', {
@@ -60,6 +63,7 @@ export const ingestRuns = pgTable('ingest_runs', {
   keywordRejected: integer('keyword_rejected').notNull().default(0),
   llmClassified: integer('llm_classified').notNull().default(0),
   llmApproved: integer('llm_approved').notNull().default(0),
+  prunedCount: integer('pruned_count').notNull().default(0),
   errorLog: jsonb('error_log'),
 });
 

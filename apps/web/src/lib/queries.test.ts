@@ -1,15 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
-import type { FeedMode } from './queries';
+import type { FeedFilter } from './queries';
 
-describe('FeedMode contract', () => {
-  it('accepts the two supported feed modes', () => {
-    const modes: FeedMode[] = ['strict', 'soft'];
-    expect(modes).toHaveLength(2);
+describe('FeedFilter contract', () => {
+  it('requires a nullable category and a numeric limit', () => {
+    const filter: FeedFilter = { category: null, limit: 30 };
+    expect(filter.category).toBeNull();
+    expect(filter.limit).toBe(30);
   });
 
-  it('treats strict as the stricter mode label', () => {
-    const mode: FeedMode = 'strict';
-    expect(mode).toBe('strict');
+  it('accepts a category string', () => {
+    const filter: FeedFilter = { category: 'culture', limit: 10 };
+    expect(filter.category).toBe('culture');
   });
 });

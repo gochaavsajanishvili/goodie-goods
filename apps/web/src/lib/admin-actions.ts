@@ -77,6 +77,15 @@ export async function refreshFeedAction(): Promise<void> {
   redirect(target);
 }
 
+export async function refreshFeedFromHomeAction(): Promise<void> {
+  await requireAdmin();
+  const result = await triggerIngestWorkflow();
+  if (result.ok) {
+    revalidatePath('/');
+  }
+  redirect(result.ok ? '/?refresh=ok' : `/?refresh=${result.reason}`);
+}
+
 export async function toggleReadLocallyAction(): Promise<void> {
   await requireAdmin();
   await toggleReadLocally();

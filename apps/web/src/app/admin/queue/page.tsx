@@ -3,6 +3,7 @@ import { Check, ExternalLink, X } from 'lucide-react';
 
 import type { Article } from '@goodie-goods/shared/schema';
 
+import { RefreshBanner } from '@/components/refresh-banner';
 import { setArticleStatusAction } from '@/lib/admin-actions';
 import { getPendingArticles } from '@/lib/queries';
 
@@ -38,32 +39,6 @@ export default async function QueuePage({ searchParams }: PageProps) {
   );
 }
 
-function RefreshBanner({ status }: { readonly status: string }) {
-  const ok = status === 'ok';
-  const classes = ok
-    ? 'border-[color:var(--color-sage)] bg-[color:var(--color-sage-soft)] text-[color:var(--color-ink)]'
-    : 'border-red-400/50 bg-red-500/10 text-red-700 dark:text-red-300';
-  const message = ok ? 'მოთხოვნა გაიგზავნა' : refreshErrorMessage(status);
-  return (
-    <div className={`rounded-lg border px-4 py-3 text-sm ${classes}`} role="status">
-      {message}
-    </div>
-  );
-}
-
-function refreshErrorMessage(status: string): string {
-  if (status === 'not-configured') {
-    return 'GitHub-ის ინტეგრაცია არ არის კონფიგურირებული';
-  }
-  if (status === 'unauthorized') {
-    return 'ავტორიზაცია ვერ მოხერხდა';
-  }
-  if (status === 'not-found') {
-    return 'სამუშაო პროცესი ვერ მოიძებნა';
-  }
-  return 'ვერ მოხერხდა';
-}
-
 function QueueRow({ article }: { readonly article: Article }) {
   return (
     <li className="grid gap-4 rounded-lg border border-[color:var(--color-rule)] bg-[color:var(--color-paper-soft)] p-5 sm:grid-cols-[1fr_auto] sm:items-start">
@@ -80,7 +55,8 @@ function QueueRow({ article }: { readonly article: Article }) {
         <a
           href={article.sourceUrl}
           target="_blank"
-          className="inline-flex items-center gap-1 font-mono text-[0.6875rem] tracking-widest text-[color:var(--color-ink-soft)] uppercase hover:text-[color:var(--color-ink)]"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 font-mono text-[0.6875rem] tracking-widest text-(--color-ink-soft) uppercase hover:text-(--color-ink)"
         >
           <ExternalLink size={11} strokeWidth={1.6} aria-hidden="true" />
           წყაროს ნახვა

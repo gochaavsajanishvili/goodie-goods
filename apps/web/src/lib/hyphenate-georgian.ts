@@ -6,10 +6,9 @@
  */
 
 const VOWELS = new Set(['ა', 'ე', 'ი', 'ო', 'უ']);
-const MKHEDRULI_RANGE = /^[ა-ჺ]+$/u;
-const MIN_WORD_LENGTH = 5;
+const MKHEDRULI_RUN = /[ა-ჺ]{4,}/gu;
 const MIN_LEADING = 2;
-const MIN_TRAILING = 2;
+const MIN_TRAILING = 1;
 const SOFT_HYPHEN = '­';
 
 const SEGMENTER = new Intl.Segmenter('ka', { granularity: 'grapheme' });
@@ -39,11 +38,8 @@ function canBreakAfter(chars: readonly string[], index: number): boolean {
   return true;
 }
 
-function hyphenateWord(word: string): string {
-  if (word.length < MIN_WORD_LENGTH || !MKHEDRULI_RANGE.test(word)) {
-    return word;
-  }
-  const chars = graphemes(word);
+function hyphenateRun(run: string): string {
+  const chars = graphemes(run);
   const out: string[] = [];
   for (let i = 0; i < chars.length; i += 1) {
     out.push(chars[i] ?? '');
@@ -55,8 +51,12 @@ function hyphenateWord(word: string): string {
 }
 
 export function hyphenateGeorgian(text: string): string {
-  return text
-    .split(/(\s+)/u)
-    .map((token) => hyphenateWord(token))
+  return text.replace(MKHEDRULI_RUN, (run) => hyphenateRun(run));
+}
+
+export function hyphenateGeorgianHtml(html: string): string {
+  return html
+    .split(/(<[^>]+>)/u)
+    .map((part) => (part.startsWith('<') ? part : hyphenateGeorgian(part)))
     .join('');
 }

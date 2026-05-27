@@ -156,6 +156,10 @@ async function verifyWithOllama(
   return list as VerdictItem[];
 }
 
+function isSkippableGeminiStatus(status: number): boolean {
+  return status === 429 || (status >= 500 && status < 600);
+}
+
 async function verifyWithGemini(
   apiKey: string,
   strings: readonly FoundString[],
@@ -173,8 +177,10 @@ async function verifyWithGemini(
     },
   );
   if (!response.ok) {
-    if (response.status === 429) {
-      process.stderr.write('check-georgian: Gemini quota exhausted, skipping check.\n');
+    if (isSkippableGeminiStatus(response.status)) {
+      process.stderr.write(
+        `check-georgian: Gemini ${response.status.toString()} ${response.statusText}, skipping check.\n`,
+      );
       return [];
     }
     throw new Error(`Gemini call failed: ${response.status.toString()} ${response.statusText}`);
