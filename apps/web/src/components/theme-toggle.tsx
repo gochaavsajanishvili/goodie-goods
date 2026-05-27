@@ -97,7 +97,7 @@ function ThemeMenu({
   return (
     <>
       <ThemeOption
-        label="სისტემური"
+        label="სისტემა"
         icon={Monitor}
         active={pref === 'system'}
         onSelect={() => {

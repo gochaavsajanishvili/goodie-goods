@@ -86,6 +86,14 @@ async function walk(dir: string, acc: string[]): Promise<void> {
   }
 }
 
+const PROTECTED_STRINGS = new Set<string>([
+  'კარგი ამბები',
+  'მხოლოდ სასიამოვნო, სასარგებლო და დადებითი ამბები ambebi.ge-დან.',
+  'ახალი ამბები განახლდა. განაახლეთ გვერდი.',
+  'ახალი ამბების განახლება',
+  'სისტემა',
+]);
+
 async function extractStrings(paths: readonly string[]): Promise<FoundString[]> {
   const collected = new Map<string, string>();
   for (const path of paths) {
@@ -97,7 +105,7 @@ async function extractStrings(paths: readonly string[]): Promise<FoundString[]> 
         continue;
       }
       const trimmed = literal.trim();
-      if (trimmed.length === 0) {
+      if (trimmed.length === 0 || PROTECTED_STRINGS.has(trimmed)) {
         continue;
       }
       if (!collected.has(trimmed)) {
