@@ -1,5 +1,6 @@
 import { ArticleCard } from '@/components/article-card';
 import { CategoryFilter } from '@/components/category-filter';
+import { RefreshBanner } from '@/components/refresh-banner';
 import { RefreshFab } from '@/components/refresh-fab';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { getSession } from '@/lib/auth';
@@ -31,7 +32,11 @@ export default async function HomePage({ searchParams }: PageProps) {
     <main className="mx-auto max-w-6xl px-5 pt-10 pb-20 sm:pt-16">
       <Masthead />
       <FilterRow category={category} />
-      {params.refresh !== undefined ? <RefreshBanner status={params.refresh} /> : null}
+      {params.refresh !== undefined ? (
+        <div className="mb-8">
+          <RefreshBanner status={params.refresh} />
+        </div>
+      ) : null}
       {articles.length === 0 ? (
         <EmptyState />
       ) : (
@@ -45,38 +50,6 @@ export default async function HomePage({ searchParams }: PageProps) {
       {session.isAdmin ? <RefreshFab /> : null}
     </main>
   );
-}
-
-function RefreshBanner({ status }: { readonly status: string }) {
-  const ok = status === 'ok';
-  const message = ok
-    ? 'ახალი ამბები მოიძებნება. გადატვირთეთ წუთის შემდეგ.'
-    : refreshErrorMessage(status);
-  return (
-    <div
-      role="status"
-      className={`mb-8 rounded-lg border px-4 py-3 text-sm ${
-        ok
-          ? 'border-(--color-sage) bg-(--color-sage-soft) text-(--color-ink)'
-          : 'border-red-400/50 bg-red-500/10 text-red-700 dark:text-red-300'
-      }`}
-    >
-      {message}
-    </div>
-  );
-}
-
-function refreshErrorMessage(status: string): string {
-  if (status === 'not-configured') {
-    return 'GitHub-ის ინტეგრაცია არ არის კონფიგურირებული';
-  }
-  if (status === 'unauthorized') {
-    return 'ავტორიზაცია ვერ მოხერხდა';
-  }
-  if (status === 'not-found') {
-    return 'სამუშაო პროცესი ვერ მოიძებნა';
-  }
-  return 'ვერ მოხერხდა';
 }
 
 function Masthead() {
