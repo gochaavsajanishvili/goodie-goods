@@ -56,6 +56,7 @@ export async function persistArticle(db: DbClient, input: PersistArticleInput): 
     adminStatus,
     body: parsed.body,
     bodyImages: [...parsed.bodyImages],
+    bodyBlocks: [...parsed.bodyBlocks],
   };
 
   await db
@@ -76,6 +77,7 @@ export async function persistArticle(db: DbClient, input: PersistArticleInput): 
         publishedAt: sql`excluded.published_at`,
         body: sql`excluded.body`,
         bodyImages: sql`excluded.body_images`,
+        bodyBlocks: sql`excluded.body_blocks`,
       },
       setWhere: eq(articles.adminStatus, 'pending'),
     });

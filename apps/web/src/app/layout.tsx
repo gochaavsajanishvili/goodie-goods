@@ -4,12 +4,16 @@ import {
   JetBrains_Mono,
   Noto_Sans_Georgian,
   Noto_Serif_Georgian,
+  Geist,
 } from 'next/font/google';
 
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
 import './globals.css';
+import { cn } from '@/lib/utils';
+
+const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
 const georgianSerif = Noto_Serif_Georgian({
   weight: ['400', '500', '600', '700'],
@@ -76,7 +80,11 @@ export default function RootLayout({ children }: { readonly children: ReactNode 
   ].join(' ');
 
   return (
-    <html lang="ka" className={fontClasses} suppressHydrationWarning>
+    <html
+      lang="ka"
+      className={cn(fontClasses, 'font-sans', geist.variable)}
+      suppressHydrationWarning
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
       </head>

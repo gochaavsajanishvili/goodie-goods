@@ -21,7 +21,7 @@ export function ArticleCard({ article, zenMode }: Props) {
     );
   }
   return (
-    <a href={article.sourceUrl} target="_blank" className={SHELL}>
+    <a href={article.sourceUrl} target="_blank" rel="noopener noreferrer" className={SHELL}>
       {body}
     </a>
   );
@@ -55,10 +55,10 @@ function CardBody({ article }: { readonly article: Article }) {
 
 function CardImage({ src }: { readonly src: string | null }) {
   if (src === null || src === '') {
-    return <div className="aspect-[16/10] bg-(--color-sage-soft)" aria-hidden="true" />;
+    return <div className="aspect-2/1 bg-(--color-sage-soft)" aria-hidden="true" />;
   }
   return (
-    <div className="aspect-[16/10] overflow-hidden bg-(--color-sage-soft)">
+    <div className="aspect-2/1 overflow-hidden bg-(--color-sage-soft)">
       <img
         src={src}
         alt=""

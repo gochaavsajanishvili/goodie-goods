@@ -1,15 +1,11 @@
 import 'server-only';
 
-import { SOFT_SCORE_THRESHOLD, STRICT_SCORE_THRESHOLD } from '@goodie-goods/shared/constants';
 import { appSettings, articles, type Article } from '@goodie-goods/shared/schema';
-import { and, desc, eq, gte, ne, type SQL } from 'drizzle-orm';
+import { and, desc, eq, ne, type SQL } from 'drizzle-orm';
 
 import { getDb } from './db';
 
-export type FeedMode = 'strict' | 'soft';
-
 export interface FeedFilter {
-  readonly mode: FeedMode;
   readonly category: string | null;
   readonly limit: number;
 }
@@ -32,8 +28,7 @@ async function selectArticlesByDate(
 }
 
 export async function getApprovedArticles(filter: FeedFilter): Promise<readonly Article[]> {
-  const threshold = filter.mode === 'strict' ? STRICT_SCORE_THRESHOLD : SOFT_SCORE_THRESHOLD;
-  const conditions: SQL[] = [...publicFeedConditions(), gte(articles.score, threshold)];
+  const conditions: SQL[] = [...publicFeedConditions()];
   if (filter.category !== null) {
     conditions.push(eq(articles.category, filter.category));
   }
@@ -56,9 +51,24 @@ export async function getApprovedArticleById(id: string): Promise<Article | null
 
 export async function getRelatedArticles(
   excludeId: string,
+  category: string,
   limit: number,
 ): Promise<readonly Article[]> {
-  return await selectArticlesByDate([...publicFeedConditions(), ne(articles.id, excludeId)], limit);
+  const sameCategory = await selectArticlesByDate(
+    [...publicFeedConditions(), ne(articles.id, excludeId), eq(articles.category, category)],
+    limit,
+  );
+  if (sameCategory.length >= limit) {
+    return sameCategory;
+  }
+  const seen = new Set(sameCategory.map((a) => a.id));
+  seen.add(excludeId);
+  const fallback = await selectArticlesByDate(
+    [...publicFeedConditions(), ne(articles.id, excludeId)],
+    limit * 2,
+  );
+  const filler = fallback.filter((a) => !seen.has(a.id)).slice(0, limit - sameCategory.length);
+  return [...sameCategory, ...filler];
 }
 
 export async function getReadLocallySetting(): Promise<boolean> {
