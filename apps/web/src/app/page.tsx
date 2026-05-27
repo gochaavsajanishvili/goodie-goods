@@ -1,12 +1,15 @@
 import { ArticleCard } from '@/components/article-card';
 import { CategoryFilter } from '@/components/category-filter';
+import { RefreshFab } from '@/components/refresh-fab';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { getSession } from '@/lib/auth';
 import { getApprovedArticles, getReadLocallySetting } from '@/lib/queries';
 
 export const revalidate = 60;
 
 interface SearchParams {
   readonly category?: string;
+  readonly refresh?: string;
 }
 
 interface PageProps {
@@ -19,14 +22,16 @@ export default async function HomePage({ searchParams }: PageProps) {
   const params = await searchParams;
   const category =
     typeof params.category === 'string' && params.category !== '' ? params.category : null;
-  const [articles, zenMode] = await Promise.all([
+  const [articles, zenMode, session] = await Promise.all([
     getApprovedArticles({ category, limit: FEED_LIMIT }),
     getReadLocallySetting(),
+    getSession(),
   ]);
   return (
     <main className="mx-auto max-w-6xl px-5 pt-10 pb-20 sm:pt-16">
       <Masthead />
       <FilterRow category={category} />
+      {params.refresh !== undefined ? <RefreshBanner status={params.refresh} /> : null}
       {articles.length === 0 ? (
         <EmptyState />
       ) : (
@@ -37,8 +42,41 @@ export default async function HomePage({ searchParams }: PageProps) {
         </section>
       )}
       <SiteFooter />
+      {session.isAdmin ? <RefreshFab /> : null}
     </main>
   );
+}
+
+function RefreshBanner({ status }: { readonly status: string }) {
+  const ok = status === 'ok';
+  const message = ok
+    ? 'ახალი ამბები მოიძებნება. გადატვირთეთ წუთის შემდეგ.'
+    : refreshErrorMessage(status);
+  return (
+    <div
+      role="status"
+      className={`mb-8 rounded-lg border px-4 py-3 text-sm ${
+        ok
+          ? 'border-(--color-sage) bg-(--color-sage-soft) text-(--color-ink)'
+          : 'border-red-400/50 bg-red-500/10 text-red-700 dark:text-red-300'
+      }`}
+    >
+      {message}
+    </div>
+  );
+}
+
+function refreshErrorMessage(status: string): string {
+  if (status === 'not-configured') {
+    return 'GitHub-ის ინტეგრაცია არ არის კონფიგურირებული';
+  }
+  if (status === 'unauthorized') {
+    return 'ავტორიზაცია ვერ მოხერხდა';
+  }
+  if (status === 'not-found') {
+    return 'სამუშაო პროცესი ვერ მოიძებნა';
+  }
+  return 'ვერ მოხერხდა';
 }
 
 function Masthead() {
