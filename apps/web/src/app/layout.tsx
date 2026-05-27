@@ -52,7 +52,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: 'კარგი ამბები',
-  description: 'მხოლოდ თბილი, სასიამოვნო და სასარგებლო ამბები ambebi.ge-დან.',
+  description: 'მხოლოდ სასიამოვნო, სასარგებლო და დადებითი ამბები ambebi.ge-დან.',
   robots: { index: true, follow: false },
 };
 
